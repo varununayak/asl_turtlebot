@@ -54,8 +54,8 @@ class Mode(Enum):
 	STOP = 3
 	CROSS = 4
 	NAV = 5
-	MANUAL = 6
-	WAIT4FOOD = 7
+	WAIT4FOOD = 6
+
 
 class State(Enum):
 	MAN_EXPLORATION = 1
@@ -92,7 +92,6 @@ labels = {
 		"donut": 60,
 		"cake": 61,
 	}
-
 
 
 
@@ -148,7 +147,7 @@ class Supervisor:
 		rospy.Subscriber('/delivery_request', String, self.message_processing_callback)
 		
 		# subscriber to receive message that exploration is done
-		rospy.Subscriber('/exploration_complete', Bool, self.exploration_complete_callback)
+		rospy.Subscriber('/exploration_complete', Bool, self.exploration_completed_callback)
 
 
 	def gazebo_callback(self, msg):
@@ -197,7 +196,6 @@ class Supervisor:
 		self.y_g = msg.y
 		self.theta_g = msg.theta
 		self.mode = Mode.NAV
-
 	
 
 	def stop_sign_detected_callback(self, msg):
@@ -211,11 +209,12 @@ class Supervisor:
 		if dist > 0 and dist < STOP_MIN_DIST and self.mode == Mode.NAV:
 			self.init_stop_sign()
 			
+
 	def message_processing_callback(self,msg):
 		orderString = msg.data
 		self.orderList = orderString.split(',')
-		self.state = State.PICKUP
 		
+
 	def exploration_completed_callback(self, msg):
 	  """
 	  Check's if exploration is completed. If it is: drive back home.
@@ -224,171 +223,79 @@ class Supervisor:
 	  exploration_complete = msg.data
 	  
 	  if exploration_complete:
-		self.state = State.GETORDER	#go home first
+		self.state_transition(State.DELIVERY)	#go home first
 
 
-	def banana_detected_callback(self,msg):
-		dist = msg.distance
+	def add_detected_item(self,dist,label):
+		print("Detected item " + str(label))
 		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):			
 			if(dist < FOOD_THRESHOLD_DISTANCE):
 				size = len(self.food_items)
 				new_item = True	#assume new food item
 				for i in range(size):
-					if(self.food_items[i][0] == BANANA_LABEL ):
+					if(self.food_items[i][0] == label ):
 						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
 							new_item = False	#same food item if found in somewhat same location
 							break					
 				if(new_item):
-					item = (BANANA_LABEL,np.array([self.x,self.y]))
+					item = (label,np.array([self.x,self.y]))
 					self.food_items.append(item)
+					print("Item position" + str([self.x,self.y]))
+
+
+	def banana_detected_callback(self,msg):
+		dist = msg.distance
+		self.add_detected_item(dist, BANANA_LABEL)
 		
 				
 	def apple_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == APPLE_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break				
-				if(new_item):
-					item = (APPLE_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
-				
+		self.add_detected_item(dist, APPLE_LABEL)
+
+
 	def sandwich_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == SANDWICH_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (SANDWICH_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
-				
+		self.add_detected_item(dist, SANDWICH_LABEL)
+
+
 	def orange_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == ORANGE_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (ORANGE_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
+		self.add_detected_item(dist, ORANGE_LABEL)
 				
 				
 	def broccoli_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):
-		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == BROCCOLI_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (BROCCOLI_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
+		self.add_detected_item(dist, BROCCOLI_LABEL)
 				
 	def carrot_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == CARROT_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (CARROT_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
+		self.add_detected_item(dist, CARROT_LABEL)
 				
 				
 	def hot_dog_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == HOT_DOG_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (HOT_DOG_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
+		self.add_detected_item(dist, HOT_DOG_LABEL)
 				
 				
 	def pizza_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == PIZZA_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break				
-				if(new_item):
-					item = (PIZZA_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
+		self.add_detected_item(dist, PIZZA_LABEL)
 				
 				
 	def donut_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == DONUT_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (DONUT_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
+		self.add_detected_item(dist, DONUT_LABEL)
 				
 				
 	def cake_detected_callback(self,msg):
 		dist = msg.distance
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):		
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == CAKE_LABEL ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (CAKE_LABEL,np.array([self.x,self.y]))
-					self.food_items.append(item)
-
-
+		self.add_detected_item(dist, CAKE_LABEL)
 
 
 	def go_to_pose(self):
 		""" sends the current desired pose to the pose controller """
+
+		raise("Dont use this one")
 
 		pose_g_msg = Pose2D()
 		pose_g_msg.x = self.x_g
@@ -396,6 +303,7 @@ class Supervisor:
 		pose_g_msg.theta = self.theta_g
 
 		self.pose_goal_publisher.publish(pose_g_msg)
+
 
 	def nav_to_pose(self):
 		""" sends the current desired pose to the naviagtor """
@@ -407,16 +315,19 @@ class Supervisor:
 
 		self.nav_goal_publisher.publish(nav_g_msg)
 
+
 	def stay_idle(self):
 		""" sends zero velocity to stay put """
 
 		vel_g_msg = Twist()
 		self.cmd_vel_publisher.publish(vel_g_msg)
 
+
 	def close_to(self,x,y,theta):
 		""" checks if the robot is at a pose within some threshold """
 
 		return (abs(x-self.x)<POS_EPS and abs(y-self.y)<POS_EPS and abs(theta-self.theta)<THETA_EPS)
+
 
 	def init_stop_sign(self):
 		""" initiates a stop sign maneuver """
@@ -424,10 +335,12 @@ class Supervisor:
 		self.stop_sign_start = rospy.get_rostime()
 		self.mode = Mode.STOP
 
+
 	def has_stopped(self):
 		""" checks if stop sign maneuver is over """
 
 		return (self.mode == Mode.STOP and (rospy.get_rostime()-self.stop_sign_start)>rospy.Duration.from_sec(STOP_TIME))
+
 
 	def init_crossing(self):
 		""" initiates an intersection crossing maneuver """
@@ -435,36 +348,64 @@ class Supervisor:
 		self.cross_start = rospy.get_rostime()
 		self.mode = Mode.CROSS
 
+
 	def has_crossed(self):
 		""" checks if crossing maneuver is over """
 
 		return (self.mode == Mode.CROSS and (rospy.get_rostime()-self.cross_start)>rospy.Duration.from_sec(CROSSING_TIME))
 
-	def stopped_for_food(self):
+
+	def init_stopped4food(self):
 		""" stops for food pickup """
 		self.stop4food_start = rospy.get_rostime()
 		self.mode = Mode.WAIT4FOOD
 	
+
 	def has_stopped4food(self):
 		""" checks if stopping for food is over """
 
 		return (self.mode == Mode.WAIT4FOOD and (rospy.get_rostime()-self.self.stop4food_start)>rospy.Duration.from_sec(STOP4FOOD_TIME))
 	  
+
 	def set_nav_goal(self,x,y,theta):
 		"changes the navigation goal pose based on State"
 		self.x_g = x
 		self.y_g = y
 		self.theta_g = theta
-	
-	def get_next_label(self):
-		"gets the index number of food_items that matches with label of first item in orderlist"
-		for i in range(len(self.food_items)):
-			if(label[self.orderlist[0]] == self.food_items[i][0]):
-				print("Found "+ self.orderlist[0] + " in list")
-				return i
+
+	#----------------------------
+	#	Here is the state machine
+	#----------------------------
+	def state_transition(self, new_state):
+
+		self.state = new_state
+
+		if(self.state == State.PICKUP):
+			if len(self.orderList > 0):
+				next_food_label = self.orderList.pop(0)
+				self.set_nav_goal(self.food_items[next_food_label][1][0],self.food_items[next_food_label][1][1],0)	#go to the next food item
+				self.mode = Mode.NAV
+				print("Going to PICKUP state")
 			else:
-				print("Food Item Requested Not in List")
-	
+				print("Picked up all food, return home.")
+				self.state_transition(State.DELIVERY)
+				return
+			
+		elif(self.state == State.DELIVERY):
+			self.set_nav_goal(0,0,0)
+			self.mode = Mode.NAV
+			print("Going home.")
+
+		elif(self.state == State.WAIT4ORDER):
+			print("Waiting for new order")
+			self.mode = Mode.IDLE
+		
+		else:
+			print("Invalid state.")
+
+	#----------------------------
+	#	State machine ends
+	#----------------------------
 
 	def loop(self):
 		""" the main loop of the robot. At each iteration, depending on its
@@ -482,28 +423,30 @@ class Supervisor:
 			except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
 				pass
 		
-		if(self.last_state != self.state):
-		  
-		  if(self.state == State.PICKUP):
-			first_label = self.get_next_label()
-			self.set_nav_goal(self.food_items[next_food_label][1][0],self.food_items[next_food_label][1][1],0)	#go to the next food item
-			self.mode = Mode.NAV
-			print("Going to PICKUP state")
-			
-		  elif(self.state == State.GETORDER):
-			self.set_nav_goal(0,0,0)
-			self.mode = Mode.NAV
-			print("Going to GETORDER state")
+
 		
 		# logs the current mode
 		if not(self.last_mode_printed == self.mode):
 			rospy.loginfo("Current Mode: %s", self.mode)
 			self.last_mode_printed = self.mode
 
-		# checks which mode it is in and acts accordingly
+		# Arrives at this mode if task is done
 		if self.mode == Mode.IDLE:
-			# send zero velocity
-			self.stay_idle()
+			
+			#Back home
+			if self.state == State.DELIVERY:
+				self.state_transition(State.WAIT4ORDER)
+
+			elif self.state == State.PICKUP:
+				print("Arrived at pickup spot.")
+				self.init_stopped4food()
+
+			elif self.state == State.WAIT4ORDER and len(self.orderList) > 0:
+				print("Recieved new order.")
+				self.state_transition(State.PICKUP)
+
+			else:
+				self.stay_idle()
 
 		elif self.mode == Mode.POSE:
 			# moving towards a desired pose
@@ -526,35 +469,22 @@ class Supervisor:
 			else:
 				self.nav_to_pose()
 		
-		elif self.mode == Mode.WAIT4FOOD and self.state == Self.PICKUP:
-			# at a stop sign
+		elif self.mode == Mode.WAIT4FOOD:
+			#if picked up food
 			if self.has_stopped4food():
-				# self.food_items.remove(self.food_items[0])
-				self.orderList.remove(self.orderList[0])
-				next_food_label = self.get_next_label()
-				self.set_nav_goal(self.food_items[next_food_label][1][0],self.food_items[next_food_label][1][1],0)	#go to the next food item
-				self.mode = Mode.NAV
-				if not orderList:
-				  self.state = State.DELIVERY
-				  print("Project Over, Going Home... \m/")
-				  self.set_nav_goal(0,0,0)
+				self.state_transition(State.PICKUP)
 			else:
 				self.stay_idle()
 
 		elif self.mode == Mode.NAV:
 			if self.close_to(self.x_g,self.y_g,self.theta_g):
-				if(self.state != State.PICKUP):
-					self.mode = Mode.IDLE
-				else:
-					self.stopped_for_food()
+				self.mode = Mode.IDLE
 			else:
 				self.nav_to_pose()
 
 		else:
 			raise Exception('This mode is not supported: %s'
 				% str(self.mode))
-			
-		self.last_state = self.state	#store last state to check for transition
 
 	def run(self):
 		rate = rospy.Rate(10) # 10 Hz
