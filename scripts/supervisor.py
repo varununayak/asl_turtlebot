@@ -15,6 +15,7 @@ Added Order string subscriber and string processig call back								3/10 9:15PM	
 
 
 import rospy
+import numpy as np
 from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float32MultiArray, String, Bool
 from geometry_msgs.msg import Twist, PoseArray, Pose2D, PoseStamped
@@ -107,6 +108,7 @@ class Supervisor:
 		self.x = 0
 		self.y = 0
 		self.theta = 0
+		self.orderList = []
 		self.mode = Mode.IDLE
 		self.state = State.MAN_EXPLORATION	# defaults to manual exploration
 		self.last_mode_printed = None
@@ -168,10 +170,11 @@ class Supervisor:
 		""" callback for a pose goal sent through rviz """
 		
 		# Only follow rviz command when in manual exploration state
+		print("got goal")
 
 		if not self.state == State.MAN_EXPLORATION:
 			return
-		
+
 		origin_frame = "/map" if mapping else "/odom"
 		print("rviz command received!")
 		try:
@@ -223,24 +226,25 @@ class Supervisor:
 	  exploration_complete = msg.data
 	  
 	  if exploration_complete:
+		print(self.food_items)
 		self.state_transition(State.DELIVERY)	#go home first
 
 
 	def add_detected_item(self,dist,label):
 		print("Detected item " + str(label))
-		if(self.state == AUT_EXPLORATION or self.state == MAN_EXPLORATION):			
-			if(dist < FOOD_THRESHOLD_DISTANCE):
-				size = len(self.food_items)
-				new_item = True	#assume new food item
-				for i in range(size):
-					if(self.food_items[i][0] == label ):
-						if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
-							new_item = False	#same food item if found in somewhat same location
-							break					
-				if(new_item):
-					item = (label,np.array([self.x,self.y]))
-					self.food_items.append(item)
-					print("Item position" + str([self.x,self.y]))
+		if(self.state == State.AUT_EXPLORATION or self.state == State.MAN_EXPLORATION):	
+			print(dist)		
+			size = len(self.food_items)
+			new_item = True	#assume new food item
+			for i in range(size):
+				if(self.food_items[i][0] == label ):
+					if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
+						new_item = False	#same food item if found in somewhat same location
+						break					
+			if(new_item):
+				item = (label,np.array([self.x,self.y]))
+				self.food_items.append(item)
+				print("Item position" + str([self.x,self.y]))
 
 
 	def banana_detected_callback(self,msg):
@@ -381,7 +385,7 @@ class Supervisor:
 		self.state = new_state
 
 		if(self.state == State.PICKUP):
-			if len(self.orderList > 0):
+			if len(self.orderList) > 0:
 				next_food_label = self.orderList.pop(0)
 				self.set_nav_goal(self.food_items[next_food_label][1][0],self.food_items[next_food_label][1][1],0)	#go to the next food item
 				self.mode = Mode.NAV
