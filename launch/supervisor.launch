@@ -1,0 +1,7 @@
+ <launch>
+    <rosparam param="sim">false</rosparam>
+    <rosparam param="map">true</rosparam>
+
+    <node pkg="asl_turtlebot" type="supervisor.py" name="turtlebot_supervisor" />
+
+</launch>

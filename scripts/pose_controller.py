@@ -9,6 +9,9 @@ import numpy as np
 from numpy import linalg
 from utils import wrapToPi
 
+DISTANCE_THRESHOLD = 0.02
+THETA_THRESHOLD = 0.08
+
 # control gains
 K1 = 0.4
 K2 = 0.8
@@ -124,7 +127,7 @@ class PoseController:
             th_rot = self.theta-self.theta_g 
             rho = linalg.norm(rel_coords) 
 
-            if (rho < 0.03) & (th_rot < 0.08):
+            if (rho < DISTANCE_THRESHOLD) & (th_rot < THETA_THRESHOLD):
                 rospy.loginfo("Close to goal: commanding zero controls")
                 self.x_g = None
                 self.y_g = None
