@@ -23,7 +23,7 @@ from asl_turtlebot.msg import DetectedObject
 import tf
 import math
 from enum import Enum
-from visualization_msgs.msg import Marker,MarkerArray
+from visualization_msgs.msg import Marker, MarkerArray
 
 # if sim is True/using gazebo, therefore want to subscribe to /gazebo/model_states\
 # otherwise, they will use a TF lookup (hw2+)
@@ -35,7 +35,7 @@ mapping = rospy.get_param("map")
 
 # threshold at which we consider the robot at a location
 POS_EPS = 0.1
-THETA_EPS = 0.3
+THETA_EPS = 1.0
 
 # time to stop at a stop sign
 STOP_TIME = 3
@@ -44,7 +44,7 @@ STOP_TIME = 3
 STOP4FOOD_TIME = 6 
 
 # minimum distance from a stop sign to obey it
-STOP_MIN_DIST = 1.0
+STOP_MIN_DIST = 0.6
 
 # time taken to cross an intersection
 CROSSING_TIME = 10
@@ -110,9 +110,8 @@ labels_reversed = {
 
 
 MAX_MARKERS = 10	#max number of markers
-label_colours ={
-	"banana": ()
-}
+
+
 
 print "supervisor settings:\n"
 print "use_gazebo = %s\n" % use_gazebo
@@ -121,6 +120,7 @@ print "mapping = %s\n" % mapping
 class Supervisor:
 
 	def __init__(self):
+		print("starting initialization of supervisor")
 		rospy.init_node('turtlebot_supervisor', anonymous=True)
 		# initialize variables
 		self.x = 0
@@ -141,10 +141,13 @@ class Supervisor:
 		self.food_items = []	#list of tuples for food items, (label,2Darray)
 		self.min_distances = []	#list of minimum realtive distances for food items so that we can store the minimum
 
+		print("initializing markers")
 		#for markers
 		self.marker_array = MarkerArray()
+		self.marker_array.markers = []
 		self.marker_array_publisher = rospy.Publisher('/food_item_markers',MarkerArray,queue_size=10)
-
+		self.marker_count = 0
+		print("Initialized maerkers")
 
 		# subscribers
 		# food item detectors
@@ -261,6 +264,7 @@ class Supervisor:
 		self.state_transition(State.DELIVERY)	#go home first
 
 
+
 	def add_detected_item(self,dist,label):
 		print("Detected item " + str(label))
 		if(self.state == State.AUT_EXPLORATION or self.state == State.MAN_EXPLORATION):	
@@ -286,41 +290,52 @@ class Supervisor:
 					self.food_items[i][1][0] = self.x
 					self.food_items[i][1][1] = self.y
 
+	
 
 	def add_marker_and_publish(self,label,x,y):
+
+		print("marker array before", self.marker_array)
+
 		marker = Marker()
-        marker.header.frame_id = "/map" #very important that this should match with the tf transform frame_id
-        marker.header.stamp = rospy.Time()
+		print("reached here")
+		marker.header.frame_id = "/map" #very important that this should match with the tf transform frame_id
+		marker.ns = str(labels_reversed[label])
+		marker.id = self.marker_count
+		self.marker_count = self.marker_count + 1
+		marker.header.stamp = rospy.Time()
 
-        marker.type = marker.TEXT_VIEW_FACING
-        marker.action = marker.ADD
+		marker.type = marker.TEXT_VIEW_FACING
+		marker.action = marker.ADD
 
-        marker.scale.x = 0.1
-        marker.scale.y = 0.1
-        marker.scale.z = 0.1
+		marker.scale.x = 0.1
+		marker.scale.y = 0.1
+		marker.scale.z = 0.1
 
-        marker.color.a = 1.0
-        marker.color.g = 1.0
-        marker.color.r = 1.0
-        marker.color.b = 0.3
-
-
-        marker.pose.orientation.x = 0 #orientation[0]
-        marker.pose.orientation.y = 0 #orientation[1]
-        marker.pose.orientation.z = 0 #orientation[2]
-        marker.pose.orientation.w = 1 #orientation[3]
+		marker.color.a = 1.0
+		marker.color.g = 1.0
+		marker.color.r = 1.0
+		marker.color.b = 0.3
 
 
-        marker.pose.position.x = x #position[0]
-        marker.pose.position.y = y #position[1]
-        marker.pose.position.z = 0 #position[2]
+		marker.pose.orientation.x = 0 #orientation[0]
+		marker.pose.orientation.y = 0 #orientation[1]
+		marker.pose.orientation.z = 0 #orientation[2]
+		marker.pose.orientation.w = 1 #orientation[3]
 
-        marker.string = labels_reversed[label]
 
-        self.marker_array.append(marker)
+		marker.pose.position.x = x #position[0]
+		marker.pose.position.y = y #position[1]
+		marker.pose.position.z = 0 #position[2]
 
-        self.marker_array_publisher.pub(self.marker_array)
+		marker.text = str(labels_reversed[label])
 
+		self.marker_array.markers.append(marker)
+
+
+		self.marker_array_publisher.publish(self.marker_array)
+		print("marker array after",self.marker_array)
+		print("published marker")
+	
 
 
 	def banana_detected_callback(self,msg):

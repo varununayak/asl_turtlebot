@@ -9,8 +9,8 @@ import numpy as np
 from numpy import linalg
 from utils import wrapToPi
 
-DISTANCE_THRESHOLD = 0.05
-THETA_THRESHOLD = 0.2
+DISTANCE_THRESHOLD = 0.03
+THETA_THRESHOLD = 0.08
 
 # control gains
 K1 = 0.4
@@ -22,10 +22,10 @@ K3 = 0.8
 TIMEOUT = np.inf
 
 # maximum velocity
-V_MAX = 0.1
+V_MAX = 0.08
 
 # maximim angular velocity
-W_MAX = 1.0
+W_MAX = 0.4
 
 # if sim is True/using gazebo, therefore want to subscribe to /gazebo/model_states\
 # otherwise, they will use a TF lookup (hw2+)
