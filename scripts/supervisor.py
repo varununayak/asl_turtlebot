@@ -125,10 +125,16 @@ class Supervisor:
 		# initialize variables
 		self.x = 0
 		self.y = 0
+		self.auto_goal_time = rospy.get_rostime()
 		self.theta = 0
 		self.orderList = []
 		self.mode = Mode.IDLE
 		self.state = State.MAN_EXPLORATION	# defaults to manual exploration
+		choice = raw_input("Do you want to run autonomous exploration?(y/n)")
+		if choice == "y":
+			self.state = State.AUT_EXPLORATION
+		print("State: " + str(self.state))
+
 		self.last_mode_printed = None
 		self.trans_listener = tf.TransformListener()
 		# command pose for controller
@@ -162,6 +168,9 @@ class Supervisor:
 		rospy.Subscriber('/detector/broccoli', DetectedObject, self.broccoli_detected_callback)
 		rospy.Subscriber('/detector/carrot', DetectedObject, self.carrot_detected_callback)
 
+		#Autonomous exploration
+		rospy.Subscriber('/auto_goal', Pose2D, self.auto_explore_callback)
+
 		# stop sign detector
 		rospy.Subscriber('/detector/stop_sign', DetectedObject, self.stop_sign_detected_callback)
 		# high-level navigation pose
@@ -193,6 +202,22 @@ class Supervisor:
 		euler = tf.transformations.euler_from_quaternion(quaternion)
 		self.theta = euler[2]
 
+
+	def auto_explore_callback(self, msg):
+
+		print("got goal")
+
+		if not self.state == State.AUT_EXPLORATION:
+			return
+
+		if rospy.get_rostime() - self.auto_goal_time < rospy.Duration.from_sec(3):
+			return
+
+		self.x_g = msg.x
+		self.y_g = msg.y
+		self.theta_g = msg.theta
+		if self.mode != Mode.STOP and self.mode != Mode.CROSS:
+			self.mode = Mode.NAV
 
 	def rviz_goal_callback(self, msg):
 		""" callback for a pose goal sent through rviz """
