@@ -121,7 +121,7 @@ class Supervisor:
 		self.cmd_vel_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 		
 		self.food_items = []	#list of tuples for food items, (label,2Darray)
-		
+		self.min_distances = []	#list of minimum distances for food items so that we can store the minimum
 
 		# subscribers
 		# food item detectors
@@ -243,15 +243,23 @@ class Supervisor:
 			print(dist)		
 			size = len(self.food_items)
 			new_item = True	#assume new food item
+			same_item_smaller_dist = False
 			for i in range(size):
 				if(self.food_items[i][0] == label ):
 					if(np.linalg.norm(self.food_items[i][1] - np.array([self.x,self.y]) ) < SAME_ITEM_THRESHOLD):
 						new_item = False	#same food item if found in somewhat same location
+						if(dist<self.min_distances[i]):
+							same_item_smaller_dist = True #it is the same item but at a smaller distance so store that
 						break					
 			if(new_item):
 				item = (label,np.array([self.x,self.y]))
+				self.min_distances.append(dist)
 				self.food_items.append(item)
 				print("Item position" + str([self.x,self.y]))
+			else:
+				if(same_item_smaller_dist):
+					self.food_items[i][1][0] = self.x
+					self.food_items[i][1][1] = self.y
 
 
 	def banana_detected_callback(self,msg):
