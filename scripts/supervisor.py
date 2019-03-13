@@ -33,7 +33,7 @@ mapping = rospy.get_param("map")
 
 
 # threshold at which we consider the robot at a location
-POS_EPS = .1
+POS_EPS = .2
 THETA_EPS = .3
 
 # time to stop at a stop sign
@@ -216,6 +216,7 @@ class Supervisor:
 	def message_processing_callback(self,msg):
 		orderString = msg.data
 		self.orderList = orderString.split(',')
+		print(self.orderList)
 		
 
 	def exploration_completed_callback(self, msg):
@@ -295,6 +296,14 @@ class Supervisor:
 		dist = msg.distance
 		self.add_detected_item(dist, CAKE_LABEL)
 
+	def get_next_label(self):
+		next_id = self.orderList.pop(0)
+
+		for i in range(len(self.food_items)):
+			if(labels[next_id] == self.food_items[i][0]):
+				print("Found" + str(next_id))
+				return i
+
 
 	def go_to_pose(self):
 		""" sends the current desired pose to the pose controller """
@@ -368,7 +377,7 @@ class Supervisor:
 	def has_stopped4food(self):
 		""" checks if stopping for food is over """
 
-		return (self.mode == Mode.WAIT4FOOD and (rospy.get_rostime()-self.self.stop4food_start)>rospy.Duration.from_sec(STOP4FOOD_TIME))
+		return (self.mode == Mode.WAIT4FOOD and (rospy.get_rostime()-self.stop4food_start)>rospy.Duration.from_sec(STOP4FOOD_TIME))
 	  
 
 	def set_nav_goal(self,x,y,theta):
@@ -386,7 +395,8 @@ class Supervisor:
 
 		if(self.state == State.PICKUP):
 			if len(self.orderList) > 0:
-				next_food_label = self.orderList.pop(0)
+				next_food_label = self.get_next_label()
+
 				self.set_nav_goal(self.food_items[next_food_label][1][0],self.food_items[next_food_label][1][1],0)	#go to the next food item
 				self.mode = Mode.NAV
 				print("Going to PICKUP state")
@@ -396,7 +406,7 @@ class Supervisor:
 				return
 			
 		elif(self.state == State.DELIVERY):
-			self.set_nav_goal(0,0,0)
+			self.set_nav_goal(0,0,np.pi)
 			self.mode = Mode.NAV
 			print("Going home.")
 

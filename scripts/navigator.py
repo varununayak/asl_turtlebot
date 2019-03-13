@@ -29,13 +29,13 @@ THETA_START_THRESH = 0.09
 THETA_START_P = 1
 
 # maximum velocity
-V_MAX = .2
+V_MAX = .08
 
 # maximim angular velocity
 W_MAX = .4
 
 # desired crusing velocity
-V_DES = 0.12
+V_DES = 0.08
 
 # gains of the path follower
 KPX = .5
@@ -229,7 +229,7 @@ class Navigator:
                 if abs(theta_err)>THETA_START_THRESH:
                     cmd_msg = Twist()
                     cmd_msg.linear.x = 0
-                    cmd_msg.angular.z = THETA_START_P * theta_err
+                    cmd_msg.angular.z = np.max([THETA_START_P * theta_err, W_MAX])
                     self.nav_vel_pub.publish(cmd_msg)
                     return
 
