@@ -7,6 +7,7 @@
   <rosparam param="rviz">true</rosparam>
 
 
+
   <node pkg="asl_turtlebot" type="supervisor.py" name="turtlebot_supervisor" output="screen"/>
   <node pkg="asl_turtlebot" type="detector_viz.py" name="turtlebot_detector_viz" />  
   <node pkg="asl_turtlebot" type="pose_controller.py" name="turtlebot_pose_controller" />
