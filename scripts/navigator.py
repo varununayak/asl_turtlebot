@@ -29,13 +29,13 @@ THETA_START_THRESH = 0.09
 THETA_START_P = 1
 
 # maximum velocity
-V_MAX = .08
+V_MAX = .1
 
 # maximim angular velocity
 W_MAX = .4
 
 # desired crusing velocity
-V_DES = 0.08
+V_DES = 0.1
 
 # gains of the path follower
 KPX = .5
@@ -45,6 +45,9 @@ KDY = 1.5
 
 # smoothing condition (see splrep documentation)
 SMOOTH = .01
+
+#Speed backward if robot gets stuck
+BACKWARD_RECOVERY_SPEED = -0.02
 
 class Navigator:
 
@@ -96,7 +99,6 @@ class Navigator:
         self.x_g = data.x
         self.y_g = data.y
         self.theta_g = data.theta
-        print("/cmd_nav callback")
         self.run_navigator()
 
     def map_md_callback(self, msg):
@@ -193,7 +195,6 @@ class Navigator:
                         pose_st.header.frame_id = 'map'
                         path_msg.poses.append(pose_st)
                     self.nav_path_pub.publish(path_msg)
-                    print("publishing path")
 
                     path_t = [0]
                     path_x = [self.current_plan[0][0]]
@@ -222,6 +223,7 @@ class Navigator:
             else:
                 rospy.logwarn("Navigator: Could not find path")
                 self.current_plan = []
+
 
         # if we have a path, execute it (we need at least 3 points for this controller)
         if len(self.current_plan) > 3:
@@ -294,7 +296,8 @@ class Navigator:
             return
         else:
             # just stop
-            cmd_x_dot = 0
+            print("Going backward to find new path")
+            cmd_x_dot = BACKWARD_RECOVERY_SPEED
             cmd_theta_dot = 0
 
         # saving the last velocity for the controller

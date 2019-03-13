@@ -33,8 +33,8 @@ mapping = rospy.get_param("map")
 
 
 # threshold at which we consider the robot at a location
-POS_EPS = 0.10
-THETA_EPS = 3
+POS_EPS = 0.1
+THETA_EPS = 0.3
 
 # time to stop at a stop sign
 STOP_TIME = 3
@@ -46,7 +46,7 @@ STOP4FOOD_TIME = 6
 STOP_MIN_DIST = 1.0
 
 # time taken to cross an intersection
-CROSSING_TIME = 6
+CROSSING_TIME = 10
 
 # state machine modes, not all implemented
 class Mode(Enum):
@@ -220,9 +220,10 @@ class Supervisor:
 			
 
 	def message_processing_callback(self,msg):
-		orderString = msg.data
-		self.orderList = orderString.split(',')
-		print(self.orderList)
+		if self.state == State.WAIT4ORDER:
+			orderString = msg.data
+			self.orderList = orderString.split(',')
+			print(self.orderList)
 		
 
 	def exploration_completed_callback(self, msg):
@@ -344,8 +345,11 @@ class Supervisor:
 
 	def close_to(self,x,y,theta):
 		""" checks if the robot is at a pose within some threshold """
-
-		return (abs(x-self.x)<POS_EPS and abs(y-self.y)<POS_EPS and abs(theta-self.theta)<THETA_EPS)
+		if (abs(x-self.x)<POS_EPS and abs(y-self.y)<POS_EPS):
+			if self.state == State.MAN_EXPLORATION:
+				return abs(theta-self.theta)<THETA_EPS
+			return True
+		return False
 
 
 	def init_stop_sign(self):
