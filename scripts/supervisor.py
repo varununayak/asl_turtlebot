@@ -133,6 +133,7 @@ class Supervisor:
 		choice = raw_input("Do you want to run autonomous exploration?(y/n)")
 		if choice == "y":
 			self.state = State.AUT_EXPLORATION
+		print("State: " + str(self.state))
 
 		self.last_mode_printed = None
 		self.trans_listener = tf.TransformListener()
@@ -212,7 +213,8 @@ class Supervisor:
 		self.x_g = msg.x
 		self.y_g = msg.y
 		self.theta_g = msg.theta
-		self.mode = Mode.NAV
+		if self.mode != Mode.STOP and self.mode != Mode.CROSS:
+			self.mode = Mode.NAV
 
 	def rviz_goal_callback(self, msg):
 		""" callback for a pose goal sent through rviz """
@@ -312,37 +314,37 @@ class Supervisor:
 
 	def add_marker_and_publish(self,label,x,y):
 		marker = Marker()
-        marker.header.frame_id = "/map" #very important that this should match with the tf transform frame_id
-        marker.header.stamp = rospy.Time()
+		marker.header.frame_id = "/map" #very important that this should match with the tf transform frame_id
+		marker.header.stamp = rospy.Time()
 
-        marker.type = marker.TEXT_VIEW_FACING
-        marker.action = marker.ADD
+		marker.type = marker.TEXT_VIEW_FACING
+		marker.action = marker.ADD
 
-        marker.scale.x = 0.1
-        marker.scale.y = 0.1
-        marker.scale.z = 0.1
+		marker.scale.x = 0.1
+		marker.scale.y = 0.1
+		marker.scale.z = 0.1
 
-        marker.color.a = 1.0
-        marker.color.g = 1.0
-        marker.color.r = 1.0
-        marker.color.b = 0.3
-
-
-        marker.pose.orientation.x = 0 #orientation[0]
-        marker.pose.orientation.y = 0 #orientation[1]
-        marker.pose.orientation.z = 0 #orientation[2]
-        marker.pose.orientation.w = 1 #orientation[3]
+		marker.color.a = 1.0
+		marker.color.g = 1.0
+		marker.color.r = 1.0
+		marker.color.b = 0.3
 
 
-        marker.pose.position.x = x #position[0]
-        marker.pose.position.y = y #position[1]
-        marker.pose.position.z = 0 #position[2]
+		marker.pose.orientation.x = 0 #orientation[0]
+		marker.pose.orientation.y = 0 #orientation[1]
+		marker.pose.orientation.z = 0 #orientation[2]
+		marker.pose.orientation.w = 1 #orientation[3]
 
-        marker.string = labels_reversed[label]
 
-        self.marker_array.append(marker)
+		marker.pose.position.x = x #position[0]
+		marker.pose.position.y = y #position[1]
+		marker.pose.position.z = 0 #position[2]
 
-        self.marker_array_publisher.pub(self.marker_array)
+		marker.string = labels_reversed[label]
+
+		self.marker_array.append(marker)
+
+		self.marker_array_publisher.pub(self.marker_array)
 
 
 
