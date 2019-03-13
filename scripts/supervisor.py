@@ -33,20 +33,20 @@ mapping = rospy.get_param("map")
 
 
 # threshold at which we consider the robot at a location
-POS_EPS = 0.15
-THETA_EPS = 0.4
+POS_EPS = 0.10
+THETA_EPS = 3
 
 # time to stop at a stop sign
 STOP_TIME = 3
 
 # time to stop at a food joint
-STOP4FOOD_TIME = 5 
+STOP4FOOD_TIME = 6 
 
 # minimum distance from a stop sign to obey it
-STOP_MIN_DIST = .5
+STOP_MIN_DIST = 1.0
 
 # time taken to cross an intersection
-CROSSING_TIME = 3
+CROSSING_TIME = 6
 
 # state machine modes, not all implemented
 class Mode(Enum):
@@ -78,8 +78,8 @@ PIZZA_LABEL = 59
 DONUT_LABEL = 60
 CAKE_LABEL = 61
 
-FOOD_THRESHOLD_DISTANCE = 1	#if item is closer than this only then register
-SAME_ITEM_THRESHOLD = 2 #if same food item was seen within this distance it is not unique
+FOOD_THRESHOLD_DISTANCE = 0.75	#if item is closer than this only then register
+SAME_ITEM_THRESHOLD = 1.5 #if same food item was seen within this distance it is not unique
 
 labels = {
 		"banana": 52,
@@ -211,10 +211,12 @@ class Supervisor:
 
 		# distance of the stop sign
 		dist = msg.distance
+		print("stop sign detected callback at distance",dist)
 
 		# if close enough and in nav mode, stop
 		if dist > 0 and dist < STOP_MIN_DIST and self.mode == Mode.NAV:
 			self.init_stop_sign()
+			print("init stop sign")
 			
 
 	def message_processing_callback(self,msg):
