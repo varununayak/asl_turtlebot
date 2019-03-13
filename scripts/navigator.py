@@ -90,11 +90,13 @@ class Navigator:
         rospy.Subscriber('/map', OccupancyGrid, self.map_callback)
         rospy.Subscriber('/map_metadata', MapMetaData, self.map_md_callback)
         rospy.Subscriber('/cmd_nav', Pose2D, self.cmd_nav_callback)
+        print("navigator initialized")
 
     def cmd_nav_callback(self, data):
         self.x_g = data.x
         self.y_g = data.y
         self.theta_g = data.theta
+        print("/cmd_nav callback")
         self.run_navigator()
 
     def map_md_callback(self, msg):
@@ -139,6 +141,7 @@ class Navigator:
             euler = tf.transformations.euler_from_quaternion(rotation)
             self.theta = euler[2]
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            print("tf exception in run navigator")
             self.current_plan = []
             return
 
@@ -190,6 +193,7 @@ class Navigator:
                         pose_st.header.frame_id = 'map'
                         path_msg.poses.append(pose_st)
                     self.nav_path_pub.publish(path_msg)
+                    print("publishing path")
 
                     path_t = [0]
                     path_x = [self.current_plan[0][0]]
@@ -229,7 +233,7 @@ class Navigator:
                 if abs(theta_err)>THETA_START_THRESH:
                     cmd_msg = Twist()
                     cmd_msg.linear.x = 0
-                    cmd_msg.angular.z = np.max([THETA_START_P * theta_err, W_MAX])
+                    cmd_msg.angular.z = np.sign(theta_err)*np.min([THETA_START_P * np.abs(theta_err), W_MAX])
                     self.nav_vel_pub.publish(cmd_msg)
                     return
 

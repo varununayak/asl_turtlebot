@@ -33,8 +33,8 @@ mapping = rospy.get_param("map")
 
 
 # threshold at which we consider the robot at a location
-POS_EPS = .2
-THETA_EPS = .3
+POS_EPS = 0.15
+THETA_EPS = 0.4
 
 # time to stop at a stop sign
 STOP_TIME = 3
@@ -151,6 +151,8 @@ class Supervisor:
 		# subscriber to receive message that exploration is done
 		rospy.Subscriber('/exploration_complete', Bool, self.exploration_completed_callback)
 
+		print("Initialized Supervisor")
+
 
 	def gazebo_callback(self, msg):
 		pose = msg.pose[msg.name.index("turtlebot3_burger")]
@@ -190,6 +192,7 @@ class Supervisor:
 			euler = tf.transformations.euler_from_quaternion(quaternion)
 			self.theta_g = euler[2]
 		except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+			print("TF exception in rviz goal callback")
 			pass
 		self.mode = Mode.NAV
 	
@@ -199,6 +202,7 @@ class Supervisor:
 		self.y_g = msg.y
 		self.theta_g = msg.theta
 		self.mode = Mode.NAV
+		print("In nav_pose_callback")
 	
 
 	def stop_sign_detected_callback(self, msg):
@@ -227,7 +231,7 @@ class Supervisor:
 	  exploration_complete = msg.data
 	  
 	  if exploration_complete:
-		print(self.food_items)
+		print("Food Items:" + str(self.food_items))
 		self.state_transition(State.DELIVERY)	#go home first
 
 

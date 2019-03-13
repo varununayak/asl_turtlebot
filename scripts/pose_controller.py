@@ -9,8 +9,8 @@ import numpy as np
 from numpy import linalg
 from utils import wrapToPi
 
-DISTANCE_THRESHOLD = 0.1
-THETA_THRESHOLD = 0.3
+DISTANCE_THRESHOLD = 0.05
+THETA_THRESHOLD = 0.1
 
 # control gains
 K1 = 0.4
