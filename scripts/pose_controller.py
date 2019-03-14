@@ -14,7 +14,7 @@ THETA_THRESHOLD = 0.08
 
 # control gains
 K1 = 0.4
-K2 = 0.8
+K2 = 0.5    #default 0.8, reducing this makes it oscillate less
 K3 = 0.8
 
 # tells the robot to stay still

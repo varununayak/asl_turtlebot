@@ -35,7 +35,7 @@ mapping = rospy.get_param("map")
 
 # threshold at which we consider the robot at a location
 POS_EPS = 0.1
-THETA_EPS = 1.0
+THETA_EPS = 0.5 	# default 1.0 reducing this makes manual exploration precise 
 
 # time to stop at a stop sign
 STOP_TIME = 3
