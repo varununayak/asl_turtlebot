@@ -59,7 +59,7 @@ class MarkerViz:
 
     def nav_goal_callback(self,msg):
 
-        self.goal_position = msg
+        self.nav_goal_position = msg
         self.got_goal_flag = True
 
 
@@ -95,7 +95,7 @@ class MarkerViz:
             marker.header.stamp = rospy.Time()
 
             marker.ns = "robot"
-			marker.id = 100		#arbitrary
+            marker.id = 100		#arbitrary
 
             marker.type = marker.CYLINDER
             marker.action = marker.ADD
@@ -125,10 +125,12 @@ class MarkerViz:
             self.marker_publisher.publish(marker)
 
 
-
             marker_goal = Marker()
             marker_goal.header.frame_id = "/map" #very important that this should match with the tf transform frame_id
             marker_goal.header.stamp = rospy.Time()
+
+            marker.ns = "navgoal"
+            marker.id = 110 #arbitrary
 
             marker_goal.type = marker_goal.CUBE
             marker_goal.action = marker_goal.ADD
@@ -138,9 +140,9 @@ class MarkerViz:
             marker_goal.scale.z = 0.2
 
             marker_goal.color.a = 1.0
-            marker_goal.color.g = 0.2
-            marker_goal.color.r = 0.8
-            marker_goal.color.b = 0.1
+            marker_goal.color.g = 1.0
+            marker_goal.color.r = 0.0
+            marker_goal.color.b = 0.2
 
             #print("pose of robot wrt odom =",position,orientation)
 
@@ -155,8 +157,8 @@ class MarkerViz:
 
             if self.got_goal_flag:
 
-                marker_goal.pose.position.x = self.goal_position.x #position[0]
-                marker_goal.pose.position.y = self.goal_position.y #position[1]
+                marker_goal.pose.position.x = self.nav_goal_position.x #position[0]
+                marker_goal.pose.position.y = self.nav_goal_position.y #position[1]
                 marker_goal.pose.position.z = 0 #position[2]
 
             else:
