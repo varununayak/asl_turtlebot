@@ -100,6 +100,7 @@ class Navigator:
         self.x_g = data.x
         self.y_g = data.y
         self.theta_g = data.theta
+        print("Navigator: cmd_nav_callback")
         self.run_navigator()
 
     def map_md_callback(self, msg):
@@ -294,6 +295,7 @@ class Navigator:
                 pose_g_msg.theta = np.arctan2(self.current_plan[1][1]-self.current_plan[0][1],self.current_plan[1][0]-self.current_plan[0][0])
             else:
                 pose_g_msg.theta = self.theta_g
+            rospy.loginfo("Navigator: Using Pose Controller For Paths Too Short")
             self.nav_pose_pub.publish(pose_g_msg)
             return
         else:
