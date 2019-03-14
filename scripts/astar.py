@@ -194,7 +194,7 @@ class DetOccupancyGrid2D(object):
 ### TESTING
 
 # A simple example
-
+'''
 width = 10
 height = 10
 x_init = (0,0)
@@ -202,7 +202,7 @@ x_goal = (8,8)
 obstacles = [((6,6),(8,7)),((2,1),(4,2)),((2,4),(4,6)),((6,2),(8,4))]
 occupancy = DetOccupancyGrid2D(width, height, obstacles)
 
-
+'''
 #A large random example
 '''
 width = 101
@@ -225,7 +225,7 @@ while not (occupancy.is_free(x_init) and occupancy.is_free(x_goal)):
 
 '''
 
-
+'''
 astar = AStar((0, 0), (width, height), x_init, x_goal, occupancy)
 
 
@@ -236,3 +236,4 @@ if not astar.solve():
 
 
 astar.plot_path()
+'''

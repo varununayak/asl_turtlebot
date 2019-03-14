@@ -13,19 +13,19 @@ DISTANCE_THRESHOLD = 0.03
 THETA_THRESHOLD = 0.08
 
 # control gains
-K1 = 0.4
-K2 = 0.5    #default 0.8, reducing this makes it oscillate less
-K3 = 0.8
+K1 = 0.3
+K2 = 0.9    #default 0.8, reducing this makes it oscillate less
+K3 = 1.0
 
 # tells the robot to stay still
 # if it doesn't get messages within that time period
 TIMEOUT = np.inf
 
 # maximum velocity
-V_MAX = 0.08
+V_MAX = 0.07
 
 # maximim angular velocity
-W_MAX = 0.4
+W_MAX = 0.6     #0.4 earlier
 
 # if sim is True/using gazebo, therefore want to subscribe to /gazebo/model_states\
 # otherwise, they will use a TF lookup (hw2+)
