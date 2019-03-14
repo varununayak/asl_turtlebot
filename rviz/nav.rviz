@@ -110,7 +110,7 @@ Visualization Manager:
       Marker Topic: /turtlebot_marker
       Name: Marker
       Namespaces:
-        {}
+        robot: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -118,7 +118,7 @@ Visualization Manager:
       Marker Topic: /turtlebot_nav_goal_marker
       Name: Marker
       Namespaces:
-        {}
+        navgoal: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -182,5 +182,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 364
-  Y: 85
+  X: 25
+  Y: 26

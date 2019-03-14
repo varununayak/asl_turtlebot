@@ -97,16 +97,16 @@ class MarkerViz:
             marker.ns = "robot"
             marker.id = 100		#arbitrary
 
-            marker.type = marker.CYLINDER
+            marker.type = marker.CUBE
             marker.action = marker.ADD
 
-            marker.scale.x = 0.08
-            marker.scale.y = 0.08
-            marker.scale.z = 0.03
+            marker.scale.x = 0.12
+            marker.scale.y = 0.12
+            marker.scale.z = 0.08
 
-            marker.color.a = 1.0
-            marker.color.g = 1.0
-            marker.color.r = 0.0
+            marker.color.a = 0.6
+            marker.color.g = 0.0
+            marker.color.r = 1.0
             marker.color.b = 0.5
 
             #print("pose of robot wrt odom =",position,orientation)
@@ -125,23 +125,25 @@ class MarkerViz:
             self.marker_publisher.publish(marker)
 
 
+
+
             marker_goal = Marker()
             marker_goal.header.frame_id = "/map" #very important that this should match with the tf transform frame_id
             marker_goal.header.stamp = rospy.Time()
 
-            marker.ns = "navgoal"
-            marker.id = 110 #arbitrary
+            marker_goal.ns = "navgoal"
+            marker_goal.id = 110 #arbitrary
 
             marker_goal.type = marker_goal.SPHERE
             marker_goal.action = marker_goal.ADD
 
-            marker_goal.scale.x = 0.15
-            marker_goal.scale.y = 0.15
-            marker_goal.scale.z = 0.15
+            marker_goal.scale.x = 0.06
+            marker_goal.scale.y = 0.06
+            marker_goal.scale.z = 0.02
 
-            marker_goal.color.a = 0.6
-            marker_goal.color.g = 0.0
-            marker_goal.color.r = 1.0
+            marker_goal.color.a = 1.0
+            marker_goal.color.g = 1.0
+            marker_goal.color.r = 0.0
             marker_goal.color.b = 0.2
 
             #print("pose of robot wrt odom =",position,orientation)
