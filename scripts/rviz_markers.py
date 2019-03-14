@@ -139,7 +139,7 @@ class MarkerViz:
             marker_goal.scale.y = 0.2
             marker_goal.scale.z = 0.2
 
-            marker_goal.color.a = 1.0
+            marker_goal.color.a = 0.75
             marker_goal.color.g = 1.0
             marker_goal.color.r = 0.0
             marker_goal.color.b = 0.2

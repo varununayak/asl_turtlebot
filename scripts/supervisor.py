@@ -351,7 +351,7 @@ class Supervisor:
 
 		marker.pose.position.x = x #position[0]
 		marker.pose.position.y = y #position[1]
-		marker.pose.position.z = 0 #position[2]
+		marker.pose.position.z = 0.2 #position[2]
 
 		marker.text = str(labels_reversed[label])
 		self.marker_array.markers.append(marker)
