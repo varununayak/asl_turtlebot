@@ -8,7 +8,7 @@
 
 
 
-  <node pkg="asl_turtlebot" type="supervisor.py" name="turtlebot_supervisor" input="screen" output="screen"/>
+  <node pkg="asl_turtlebot" type="supervisor.py" name="turtlebot_supervisor"  output="screen"/>
   <node pkg="asl_turtlebot" type="detector_viz.py" name="turtlebot_detector_viz" />  
   <node pkg="asl_turtlebot" type="pose_controller.py" name="turtlebot_pose_controller" />
   <node pkg="asl_turtlebot" type="navigator.py" name="turtlebot_navigator" output = "screen"/>

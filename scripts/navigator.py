@@ -96,6 +96,7 @@ class Navigator:
         print("navigator initialized")
 
     def cmd_nav_callback(self, data):
+
         self.x_g = data.x
         self.y_g = data.y
         self.theta_g = data.theta
@@ -150,6 +151,7 @@ class Navigator:
         # makes sure we have a map
         if not self.occupancy:
             self.current_plan = []
+            print("no map")
             return
 
         # if close to the goal, use the pose_controller instead

@@ -41,10 +41,10 @@ THETA_EPS = 1.0
 STOP_TIME = 3
 
 # time to stop at a food joint
-STOP4FOOD_TIME = 6 
+STOP4FOOD_TIME = 10
 
 # minimum distance from a stop sign to obey it
-STOP_MIN_DIST = 0.6
+STOP_MIN_DIST = 0.5
 
 # time taken to cross an intersection
 CROSSING_TIME = 10
@@ -130,11 +130,14 @@ class Supervisor:
 		self.orderList = []
 		self.mode = Mode.IDLE
 		self.state = State.MAN_EXPLORATION	# defaults to manual exploration
+
+	
 		choice = raw_input("Do you want to run autonomous exploration?(y/n)")
 		if choice == "y":
 			self.state = State.AUT_EXPLORATION
 		print("State: " + str(self.state))
-
+		
+		
 		self.last_mode_printed = None
 		self.trans_listener = tf.TransformListener()
 		# command pose for controller
@@ -143,6 +146,8 @@ class Supervisor:
 		self.nav_goal_publisher = rospy.Publisher('/cmd_nav', Pose2D, queue_size=10)
 		# command vel (used for idling)
 		self.cmd_vel_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+
+		self.deactivate_pose_controller_publisher = rospy.Publisher('/deactivate_pose_control', Bool, queue_size=1)
 		
 		self.food_items = []	#list of tuples for food items, (label,2Darray)
 		self.min_distances = []	#list of minimum realtive distances for food items so that we can store the minimum
@@ -150,7 +155,6 @@ class Supervisor:
 		print("initializing markers")
 		#for markers
 		self.marker_array = MarkerArray()
-		self.marker_array.markers = []
 		self.marker_array_publisher = rospy.Publisher('/food_item_markers',MarkerArray,queue_size=10)
 		self.marker_count = 0
 		print("Initialized maerkers")
@@ -262,7 +266,7 @@ class Supervisor:
 
 		# distance of the stop sign
 		dist = msg.distance
-		print("stop sign detected callback at distance",dist)
+		#print("stop sign detected callback at distance",dist)
 
 		# if close enough and in nav mode, stop
 		if dist > 0 and dist < STOP_MIN_DIST and self.mode == Mode.NAV:
@@ -335,13 +339,10 @@ class Supervisor:
 		marker.scale.x = 0.1
 		marker.scale.y = 0.1
 		marker.scale.z = 0.1
-
 		marker.color.a = 1.0
 		marker.color.g = 1.0
 		marker.color.r = 1.0
 		marker.color.b = 0.3
-
-
 		marker.pose.orientation.x = 0 #orientation[0]
 		marker.pose.orientation.y = 0 #orientation[1]
 		marker.pose.orientation.z = 0 #orientation[2]
@@ -353,11 +354,11 @@ class Supervisor:
 		marker.pose.position.z = 0 #position[2]
 
 		marker.text = str(labels_reversed[label])
-
 		self.marker_array.markers.append(marker)
 
-
 		self.marker_array_publisher.publish(self.marker_array)
+
+
 		print("marker array after",self.marker_array)
 		print("published marker")
 	
@@ -442,8 +443,9 @@ class Supervisor:
 		nav_g_msg.theta = self.theta_g
 
 		self.nav_goal_publisher.publish(nav_g_msg)
+		self.deactivate_pose_controller()
 
-
+		
 	def stay_idle(self):
 		""" sends zero velocity to stay put """
 
@@ -453,11 +455,23 @@ class Supervisor:
 
 	def close_to(self,x,y,theta):
 		""" checks if the robot is at a pose within some threshold """
+
 		if (abs(x-self.x)<POS_EPS and abs(y-self.y)<POS_EPS):
 			if self.state == State.MAN_EXPLORATION:
-				return abs(theta-self.theta)<THETA_EPS
+				if(abs(theta-self.theta)<THETA_EPS):
+					self.deactivate_pose_controller()
+					return True
+				else:
+					return False					
+			self.deactivate_pose_controller()
 			return True
 		return False
+
+	def deactivate_pose_controller(self):
+
+		message = Bool()
+		message.data = True
+		self.deactivate_pose_controller_publisher.publish(message)
 
 
 	def init_stop_sign(self):
@@ -555,6 +569,10 @@ class Supervisor:
 			except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
 				pass
 		
+
+		if(len(self.marker_array.markers) != 0):
+			#print("publishing marker array")
+			self.marker_array_publisher.publish(self.marker_array)
 
 		
 		# logs the current mode

@@ -97,6 +97,14 @@ Visualization Manager:
       Radius: 0.00999999978
       Reference Frame: base_footprint
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /food_item_markers
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -158,5 +166,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 67
-  Y: 69
+  X: 141
+  Y: 95

@@ -3,7 +3,7 @@
 import rospy
 from gazebo_msgs.msg import ModelStates
 from geometry_msgs.msg import Twist, PoseArray, Pose2D
-from std_msgs.msg import Float32MultiArray, String
+from std_msgs.msg import Float32MultiArray, String, Bool
 import tf
 import numpy as np
 from numpy import linalg
@@ -70,7 +70,20 @@ class PoseController:
 
         rospy.Subscriber('/cmd_pose', Pose2D, self.cmd_pose_callback)
 
+        rospy.Subscriber('/deactivate_pose_control', Bool, self.deactivate_controller)
+
+
         ######### END OF YOUR CODE ##########
+
+    def deactivate_controller(self,msg):
+
+        if(msg.data):
+            self.x_g = None
+            self.y_g = None
+            self.theta_g = None
+            print("Deactivated pose_controller")
+
+
 
     def gazebo_callback(self, data):
         if "turtlebot3_burger" in data.name:
