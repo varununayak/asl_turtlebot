@@ -100,14 +100,14 @@ class MarkerViz:
             marker.type = marker.CYLINDER
             marker.action = marker.ADD
 
-            marker.scale.x = 0.15
-            marker.scale.y = 0.15
-            marker.scale.z = 0.15
+            marker.scale.x = 0.08
+            marker.scale.y = 0.08
+            marker.scale.z = 0.03
 
             marker.color.a = 1.0
-            marker.color.g = 0
-            marker.color.r = 1.0
-            marker.color.b = 0.2
+            marker.color.g = 1.0
+            marker.color.r = 0.0
+            marker.color.b = 0.5
 
             #print("pose of robot wrt odom =",position,orientation)
 
@@ -132,16 +132,16 @@ class MarkerViz:
             marker.ns = "navgoal"
             marker.id = 110 #arbitrary
 
-            marker_goal.type = marker_goal.CUBE
+            marker_goal.type = marker_goal.SPHERE
             marker_goal.action = marker_goal.ADD
 
-            marker_goal.scale.x = 0.2
-            marker_goal.scale.y = 0.2
-            marker_goal.scale.z = 0.2
+            marker_goal.scale.x = 0.15
+            marker_goal.scale.y = 0.15
+            marker_goal.scale.z = 0.15
 
-            marker_goal.color.a = 0.75
-            marker_goal.color.g = 1.0
-            marker_goal.color.r = 0.0
+            marker_goal.color.a = 0.6
+            marker_goal.color.g = 0.0
+            marker_goal.color.r = 1.0
             marker_goal.color.b = 0.2
 
             #print("pose of robot wrt odom =",position,orientation)
