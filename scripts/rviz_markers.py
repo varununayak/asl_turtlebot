@@ -84,7 +84,7 @@ class MarkerViz:
                     #print("got tf data,break")
                     break
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                    print("sleeping")
+                    #print("sleeping")
                     rate.sleep()
 
 
