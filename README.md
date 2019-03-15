@@ -4,7 +4,7 @@ Robot RViz Demo (Team 4: AA274 2018-19): https://youtu.be/K_kqTDShgIc
 
 Snapshot:
 
-![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+![Snapshot](https://github.com/varununayak/asl_turtlebot/blob/project/snapshot.png)
 
 
 
