@@ -1,8 +1,14 @@
 # asl_turtlebot
 
-Robot RViz Demo (Team 4: AA274 2018-19):
+Robot RViz Demo (Team 4: AA274 2018-19): https://youtu.be/K_kqTDShgIc
 
-https://youtu.be/K_kqTDShgIc
+Snapshot:
+
+![alt text](https://raw.githubusercontent.com/username/projectname/branch/path/to/img.png)
+
+
+
+
 
 
 
