@@ -1,5 +1,7 @@
 # asl_turtlebot
 
+This repository contains the full autonomy stack (implemented on ROS) for a turtlebot to navigate through a mock environment to fetch and deliver "food".
+
 Robot RViz Demo (Team 4: AA274 2018-19): https://youtu.be/K_kqTDShgIc
 
 Snapshot:
